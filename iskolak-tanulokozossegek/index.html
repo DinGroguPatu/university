@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fogalomkártyák – Iskolák és tanuló közösségek</title>
+<style>
+:root {
+  --bg: #F3F6F6;
+  --card: #FFFFFF;
+  --ink: #1D2A2C;
+  --muted: #5F6B6D;
+  --accent: #1B6B73;
+  --accent-ink: #FFFFFF;
+  --accent-weak: #E2EEEF;
+  --border: #D3DDDE;
+  --good: #2E7D4F;
+  --good-weak: #E3F2E8;
+  --warn: #A85A12;
+  --warn-weak: #FBEEDD;
+  --shadow: 0 1px 2px rgba(20, 40, 42, .06), 0 8px 24px rgba(20, 40, 42, .08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111819;
+    --card: #1A2526;
+    --ink: #E5EDEE;
+    --muted: #9AAAAC;
+    --accent: #63B5BE;
+    --accent-ink: #0E1A1B;
+    --accent-weak: #1F3537;
+    --border: #2C3C3E;
+    --good: #72C796;
+    --good-weak: #1C3226;
+    --warn: #E8A564;
+    --warn-weak: #382819;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 32px; }
+header h1 { font-size: 1.45rem; line-height: 1.25; margin: 0 0 2px; color: var(--accent); letter-spacing: -.01em; }
+header p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+.decks { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 12px; }
+.chip {
+  appearance: none; border: 1px solid var(--border); background: var(--card); color: var(--ink);
+  border-radius: 999px; padding: 6px 14px; font: inherit; font-size: .9rem; cursor: pointer;
+}
+.chip[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.chip:focus-visible, .btn:focus-visible, .more:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.status { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; font-size: .9rem; color: var(--muted); }
+.status .count { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }
+.status .tally { display: flex; gap: 6px; }
+.pill { border-radius: 999px; padding: 1px 10px; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.pill.good { background: var(--good-weak); color: var(--good); }
+.pill.warn { background: var(--warn-weak); color: var(--warn); }
+.status .spacer { flex: 1; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+.toggle input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+
+.scene { perspective: 1400px; }
+.card {
+  display: grid; position: relative; cursor: pointer;
+  transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3, .7, .3, 1);
+}
+.card.flipped { transform: rotateY(180deg); }
+.face {
+  grid-area: 1 / 1; min-height: 300px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow);
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  padding: 28px 28px 24px; display: flex; flex-direction: column;
+}
+.back { transform: rotateY(180deg); }
+.front { align-items: center; justify-content: center; text-align: center; }
+.tag { font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.front .tag { position: absolute; top: 18px; left: 22px; }
+.front .num { position: absolute; top: 18px; right: 22px; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.term { font-size: clamp(1.6rem, 4.5vw, 2.2rem); line-height: 1.2; font-weight: 700; margin: 8px 0 6px; text-wrap: balance; }
+.en { color: var(--muted); font-style: italic; font-size: .98rem; }
+.hint { margin-top: 22px; color: var(--muted); font-size: .88rem; }
+
+.back .head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.back .bterm { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+.back .ben { color: var(--muted); font-style: italic; font-size: .88rem; }
+.core { font-size: 1.07rem; line-height: 1.6; margin: 0; }
+.core strong, .rest strong { color: var(--accent); font-weight: 650; }
+.more {
+  align-self: flex-start; margin-top: 14px; appearance: none; background: none; border: 0; padding: 4px 0;
+  color: var(--accent); font: inherit; font-size: .92rem; font-weight: 600; cursor: pointer;
+}
+.more .chev { display: inline-block; transition: transform .2s; }
+.more[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.rest { margin: 8px 0 0; padding: 0; list-style: none; }
+.rest li { position: relative; padding-left: 16px; margin: 6px 0; font-size: .96rem; line-height: 1.55; }
+.rest li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .55; }
+.src { margin-top: auto; padding-top: 14px; font-size: .78rem; color: var(--muted); font-style: italic; }
+
+.rate { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.rate[hidden] { display: none; }
+.btn {
+  appearance: none; font: inherit; font-weight: 600; font-size: .95rem; cursor: pointer;
+  border-radius: 10px; padding: 11px 14px; border: 1px solid var(--border); background: var(--card); color: var(--ink);
+  min-height: 44px;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.warn { background: var(--warn-weak); color: var(--warn); border-color: transparent; }
+.btn.good { background: var(--good-weak); color: var(--good); border-color: transparent; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.nav { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 10px; margin-top: 10px; }
+.keys { margin: 14px 0 0; font-size: .8rem; color: var(--muted); text-align: center; }
+kbd { font-family: inherit; font-size: .78rem; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--card); }
+
+.done {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow);
+  padding: 32px 28px; text-align: center;
+}
+.done h2 { margin: 0 0 6px; font-size: 1.35rem; }
+.done p { margin: 0 0 18px; color: var(--muted); }
+.done .stats { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+.done .stats .pill { font-size: .95rem; padding: 4px 14px; }
+.done .actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.done[hidden], .study[hidden], .decks[hidden] { display: none; }
+.decks[hidden] + .status { margin-top: 16px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 520px) {
+  .face { padding: 22px 18px 18px; min-height: 260px; }
+  .front .tag { left: 16px; top: 14px; }
+  .front .num { right: 16px; top: 14px; }
+  .nav { grid-template-columns: 1fr 1fr; }
+  .nav .flip { grid-column: 1 / -1; grid-row: 1; }
+  .keys { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; transform: none !important; }
+  .face { backface-visibility: visible; transform: none; transition: opacity .15s; }
+  .card .back { opacity: 0; visibility: hidden; }
+  .card.flipped .front { opacity: 0; visibility: hidden; }
+  .card.flipped .back { opacity: 1; visibility: visible; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Fogalomkártyák</h1>
+    <p>Iskolák és tanuló közösségek · 2026/27. őszi félév</p>
+  </header>
+
+  <div class="decks" role="radiogroup" aria-label="Pakli kiválasztása" id="decks"></div>
+
+  <div class="status">
+    <span class="count" id="count"></span>
+    <span class="tally"><span class="pill good" id="tKnown"></span><span class="pill warn" id="tPractice"></span></span>
+    <span class="spacer"></span>
+    <label class="toggle"><input type="checkbox" id="shuffle"> Keverés</label>
+  </div>
+  <div class="bar" aria-hidden="true"><span id="bar"></span></div>
+
+  <section class="study" id="study">
+    <div class="scene">
+      <div class="card" id="card">
+        <div class="face front" id="front"></div>
+        <div class="face back" id="back"></div>
+      </div>
+    </div>
+    <div class="rate" id="rate" hidden>
+      <button class="btn warn" id="btnPractice" type="button">Még gyakorlom</button>
+      <button class="btn good" id="btnKnown" type="button">Tudom</button>
+    </div>
+    <div class="nav">
+      <button class="btn" id="btnPrev" type="button">← Előző</button>
+      <button class="btn primary flip" id="btnFlip" type="button">Megfordítás</button>
+      <button class="btn" id="btnNext" type="button">Következő →</button>
+    </div>
+    <p class="keys"><kbd>Szóköz</kbd> megfordítás · <kbd>←</kbd> <kbd>→</kbd> lapozás · <kbd>1</kbd> még gyakorlom · <kbd>2</kbd> tudom</p>
+  </section>
+
+  <section class="done" id="done" hidden>
+    <h2>Végigért a paklin!</h2>
+    <p id="doneText"></p>
+    <div class="stats" id="doneStats"></div>
+    <div class="actions" id="doneActions"></div>
+  </section>
+
+  <div class="sr" aria-live="polite" id="live"></div>
+</div>
+
+<script>
+const CARDS = [{"id":"c1","n":1,"deck":"zh","term":"Adaptivitás","en":"","core":"Az adaptivitás olyan pedagógiai <strong>szemlélet</strong>, amelyben az iskola és a pedagógus a tanulók <strong>egyéni különbségeihez</strong> (előzetes tudás, képességek, érdeklődés, tanulási tempó, családi háttér) igazítja a tanulásszervezést, és nem a tanulóktól várja, hogy egy egységes átlaghoz alkalmazkodjanak.","coreText":"Az adaptivitás olyan pedagógiai szemlélet, amelyben az iskola és a pedagógus a tanulók egyéni különbségeihez (előzetes tudás, képességek, érdeklődés, tanulási tempó, családi háttér) igazítja a tanulásszervezést, és nem a tanulóktól várja, hogy egy egységes átlaghoz alkalmazkodjanak.","rest":["Rapos és Lénárd (2008) szerint nem módszerek összessége, hanem <strong>tudatosan felépített pedagógiai folyamat</strong>, amely <strong>megelőző</strong> jellegű: nem utólag kompenzálja a lemaradást, hanem eleve a sokféleségre tervez.","Ebben különbözik a hagyományos <strong>differenciálástól</strong>, amely jellemzően csak az átlagtól eltérő tanulókra figyel.","A <strong>heterogén</strong> tanulócsoport ebben a felfogásban nem hátrány, hanem előny; az adaptív-elfogadó iskola koncepciójában (Rapos és mtsai, 2011) az adaptivitás az iskola egyik alapvető értékdimenziója."],"source":"Rapos–Lénárd (2008); Rapos–Gaskó–Kálmán–Mészáros (2011); előadás: Nahalka adaptív szemlélete"},{"id":"c2","n":2,"deck":"zh","term":"Árnyékoktatás","en":"","core":"Az árnyékoktatás az iskolai oktatás mellett, azt <strong>kiegészítve</strong> zajló <strong>fizetős magánoktatás</strong>, például magántanári óra, korrepetálás, felvételi- vagy érettségi-felkészítő.","coreText":"Az árnyékoktatás az iskolai oktatás mellett, azt kiegészítve zajló fizetős magánoktatás, például magántanári óra, korrepetálás, felvételi- vagy érettségi-felkészítő.","rest":["Bray nyomán három ismérve van: kiegészítő jellegű (az iskolában is tanított tantárgyra irányul), <strong>piaci áron</strong> vehető igénybe, és <strong>akadémikus</strong>, vizsgán is számító tárgyat érint – ezért a zeneóra vagy a sportedzés nem tartozik ide (Győri, 2020).","Azért „árnyék”, mert <strong>követi az iskolai tantervet</strong> és a vizsgarendszert: ha azok változnak, az árnyékoktatás is velük változik.","Oktatásszociológiai jelentősége, hogy főként a kedvezőbb szociokulturális és szocioökonómiai státuszú családok veszik igénybe, ami így tovább <strong>növelheti az oktatási egyenlőtlenségeket</strong>."],"source":"Győri (2020)"},{"id":"c3","n":3,"deck":"zh","term":"Tanuló szakmai közösségek","en":"professional learning communities, PLC","core":"A tanuló szakmai közösség olyan <strong>pedagógusközösség</strong> (pl. tantestület, munkaközösség, évfolyamcsapat), amelynek tagjai rendszeresen és tudatosan <strong>együtt tanulnak</strong>, hogy javítsák a <strong>tanulók tanulását</strong> és saját gyakorlatukat.","coreText":"A tanuló szakmai közösség olyan pedagógusközösség (pl. tantestület, munkaközösség, évfolyamcsapat), amelynek tagjai rendszeresen és tudatosan együtt tanulnak, hogy javítsák a tanulók tanulását és saját gyakorlatukat.","rest":["Fő jellemzői (Stoll és mtsai, 2006): <strong>közös értékek és jövőkép</strong>, <strong>kollektív felelősség</strong> a tanulók eredményeiért, <strong>reflektív szakmai párbeszéd</strong>, együttműködés, valamint az egyéni és csoportos szakmai tanulás támogatása.","A gyakorlatban ide tartozik például a kölcsönös óralátogatás, a tanulói munkák és óratervek közös elemzése, az esetmegbeszélés vagy az akciókutatás – a tanítás így nem egy-egy tanár „magánügye”.","Az így működő iskola <strong>tanuló szervezetté</strong> válik, ami a tanári elköteleződést és jóllétet is erősítheti.","Nem azonos a gyerekek szülői kezdeményezésű, alternatív <strong>tanulóközösségeivel</strong> (Langerné Buchwald, 2019)."],"source":"Stoll és mtsai (2006); a megkülönböztetéshez: Langerné Buchwald (2019)"},{"id":"c4","n":4,"deck":"zh","term":"Esélyegyenlőség","en":"equality","core":"Az esélyegyenlőség elsősorban az <strong>egyenlő hozzáférés</strong> azonos módon való biztosítását, vagyis az <strong>egyenlő bánásmódot</strong> jelenti.","coreText":"Az esélyegyenlőség elsősorban az egyenlő hozzáférés azonos módon való biztosítását, vagyis az egyenlő bánásmódot jelenti.","rest":["Azt a <strong>demokratikus társadalmi minimumot</strong> biztosítja, hogy senki ne kerüljön hátrányba vélt vagy valós egyéni adottságai, illetve valamilyen csoporthoz tartozása miatt, és ne rekesszék ki a társadalmi lehetőségekből.","Az oktatásban ezt például az ingyenes, kötelező iskoláztatás és a <strong>diszkrimináció tilalma</strong> jelenti (az oktatáshoz való hozzáférés jogára épülő felfogás).","Önmagában csak azt garantálja, hogy senki nincs kizárva, azt nem, hogy mindenki ténylegesen élni is tud a lehetőséggel; a mindenkivel egyformán bánó iskola ezért csak <strong>látszólag igazságos</strong> (Rapos–Lénárd, 2008).","Réthy (2020) szerint az esélyegyenlőség inkább hosszú távú <strong>cél</strong>, amelyhez az esélyigazságosság (méltányosság) gyakorlata vezet."],"source":"előadás diái; Nahalka (2022); Rapos–Lénárd (2008); Réthy (2020)"},{"id":"c5","n":5,"deck":"zh","term":"Méltányosság","en":"equity","core":"A méltányosság mindazokat a tevékenységeket jelenti, amelyek az <strong>egyenlőtlenségek ellensúlyozásával valódi hozzáférést</strong> biztosítanak az egyenlőtlen helyzetben lévő személyek és csoportok számára.","coreText":"A méltányosság mindazokat a tevékenységeket jelenti, amelyek az egyenlőtlenségek ellensúlyozásával valódi hozzáférést biztosítanak az egyenlőtlen helyzetben lévő személyek és csoportok számára.","rest":["Míg az esélyegyenlőség azonos bánásmódot, a méltányosság a <strong>szükségletekhez igazított, személyre szabott támogatást</strong> jelenti: aki többet igényel, több segítséget kap (vö. az „equal vs. equitable” ábrát: mindenki ugyanannyi vizet kap – mindenki annyit kap, amennyire szüksége van).","Az OECD (2007) két dimenzióját különíti el: az <strong>igazságosságot</strong> (a személyes és társadalmi körülmények ne akadályozzák a tanulást) és a <strong>befogadást</strong> (mindenki érje el az alapvető minimumszintet).","Réthy (2020) szerint a méltányos pedagógia esélyteremtő, befogadó, szelekciómentes, kompenzatorikus és gyermekközpontú."],"source":"előadás diái; OECD (2007); Réthy (2020)"},{"id":"c6","n":6,"deck":"zh","term":"Érték, norma","en":"","core":"Az <strong>érték</strong> az, amit egy adott egyén, csoport vagy társadalom <strong>jónak, kívánatosnak</strong> tart; viszonyítási pont, amely döntéseinket és viselkedésünket irányítja.","coreText":"Az érték az, amit egy adott egyén, csoport vagy társadalom jónak, kívánatosnak tart; viszonyítási pont, amely döntéseinket és viselkedésünket irányítja.","rest":["A <strong>norma</strong> ezzel szemben <strong>előíró, felszólító</strong> jellegű: megmondja, hogyan kell viselkedni, cselekedni egy adott helyzetben, és betartását a közösség jutalmazással, szankcióval erősíti.","Röviden: az érték a „mi a jó?”, a norma a „mit kell tenni?” kérdésre felel, és a normák többnyire értékekből vezethetők le.","Az iskolában az értékek a <strong>pedagógiai programban</strong>, a normák a <strong>házirendben</strong> és az osztály közösen kialakított szabályaiban jelennek meg, de a <strong>rejtett tanterv</strong> is közvetíti őket.","Pluralista társadalomban az iskola nem lehet értéksemleges: saját értékvilágot kell kialakítania (Rapos és mtsai, 2011)."],"source":"Mészáros (2015a); Rapos és mtsai (2011); Knausz (2013)"},{"id":"c7","n":7,"deck":"zh","term":"Hátrányos helyzet (HH, HHH)","en":"","core":"A hátrányos helyzet <strong>viszonyfogalom</strong>: nincs abszolút értelemben vett hátrányos helyzet, mindig csak a maga konkrét <strong>kontextusában</strong> határozható meg, olyan jellemzőkként, amelyek jelentősen rontják az egyén vagy csoport boldogulását és a javakhoz való hozzáférését.","coreText":"A hátrányos helyzet viszonyfogalom: nincs abszolút értelemben vett hátrányos helyzet, mindig csak a maga konkrét kontextusában határozható meg, olyan jellemzőkként, amelyek jelentősen rontják az egyén vagy csoport boldogulását és a javakhoz való hozzáférését.","rest":["Forrása lehet <strong>szocioökonómiai</strong> (objektív és szubjektív szegénység) és <strong>szociokulturális</strong> (nyelvi, tanulási, kulturális) hátrány.","Jogi értelemben (Gyvt. 67/A. §) <strong>hátrányos helyzetű (HH)</strong> az a <strong>rendszeres gyermekvédelmi kedvezményre jogosult</strong> gyermek, akinél <strong>egy</strong> fennáll az alábbiak közül: a szülő (gyám) alacsony iskolai végzettsége, alacsony foglalkoztatottsága, illetve elégtelen lakókörnyezet, lakáskörülmények.","<strong>Halmozottan hátrányos helyzetű (HHH)</strong> az, akinél ezek közül <strong>legalább kettő</strong> fennáll, továbbá a nevelésbe vett gyermek és az utógondozói ellátásban részesülő, tanulói vagy hallgatói jogviszonyban álló fiatal felnőtt."],"source":"előadás diái; Nahalka (2022); Gyvt. 67/A. §"},{"id":"c8","n":8,"deck":"zh","term":"SNI – sajátos nevelési igény","en":"special educational needs","core":"<strong>Sajátos nevelési igényű</strong> az a <strong>különleges bánásmódot igénylő</strong> gyermek, tanuló, aki a <strong>szakértői bizottság</strong> szakértői véleménye alapján mozgásszervi, érzékszervi (látási, hallási), értelmi vagy beszédfogyatékos, halmozottan fogyatékos, <strong>autizmus spektrum zavarral</strong> vagy egyéb pszichés fejlődési zavarral (súlyos tanulási, figyelem- vagy magatartásszabályozási zavarral) küzd (Nkt. 4. § 25.).","coreText":"Sajátos nevelési igényű az a különleges bánásmódot igénylő gyermek, tanuló, aki a szakértői bizottság szakértői véleménye alapján mozgásszervi, érzékszervi (látási, hallási), értelmi vagy beszédfogyatékos, halmozottan fogyatékos, autizmus spektrum zavarral vagy egyéb pszichés fejlődési zavarral (súlyos tanulási, figyelem- vagy magatartásszabályozási zavarral) küzd (Nkt. 4. § 25.).","rest":["A státusz <strong>jogosultságot</strong> jelent gyógypedagógiai (habilitációs, rehabilitációs) fejlesztésre, és a szakértői vélemény alapján egyes tárgyak értékelése alóli mentességre vagy könnyítésekre (pl. hosszabb idő, segédeszköz).","Nevelése-oktatása történhet külön, gyógypedagógiai intézményben vagy a többi tanulóval együtt, <strong>integráltan</strong>.","El kell különíteni a <strong>BTMN</strong>-től (beilleszkedési, tanulási, magatartási nehézség), amely nem fogyatékosságon alapuló, enyhébb kategória; mindkettő a <strong>kiemelt figyelmet igénylő</strong> tanulók körébe tartozik.","Az adaptív-elfogadó iskola koncepciója figyelmeztet, hogy az ilyen kategóriák <strong>címkeként</strong> is működhetnek, ezért a gyermek egyéni szükségleteire kell figyelni, nem a kategóriára."],"source":"Nkt. 4. § 3., 13., 25. pont; Rapos és mtsai (2011)"},{"id":"c9","n":9,"deck":"zh","term":"Neurodiverzitás","en":"neurodiversity","core":"A neurodiverzitás (Judy Singer, 1990-es évek vége) azt fejezi ki, hogy az emberi idegrendszer működése <strong>természetes módon sokféle</strong>, és az eltérő idegrendszeri fejlődés (pl. <strong>autizmus, ADHD, diszlexia</strong>, <strong>diszkalkulia</strong>) az <strong>emberi sokféleség része</strong>, nem hiba vagy betegség, amelyet „meg kell javítani”.","coreText":"A neurodiverzitás (Judy Singer, 1990-es évek vége) azt fejezi ki, hogy az emberi idegrendszer működése természetes módon sokféle, és az eltérő idegrendszeri fejlődés (pl. autizmus, ADHD, diszlexia, diszkalkulia) az emberi sokféleség része, nem hiba vagy betegség, amelyet „meg kell javítani”.","rest":["<strong>Neurotipikus</strong> az, akinek idegrendszeri működése a többséghez hasonló, <strong>neurodivergens</strong> az, akinek ettől eltér.","A szemlélet a fogyatékosság orvosi modelljével szemben a <strong>társadalmi modellhez</strong> kapcsolódik: a nehézségeket nagyrészt a környezet alkalmazkodásának hiánya okozza.","Pedagógiai következménye az <strong>erősségekre építő</strong>, rugalmas, többféle tanulási utat kínáló, <strong>inkluzív</strong> tanulási környezet, amelyből nemcsak a diagnózissal rendelkező tanulók profitálnak."],"source":"Singer (1999)"},{"id":"c10","n":10,"deck":"zh","term":"Tehetség","en":"giftedness, talent","core":"A tehetség olyan kiemelkedő <strong>adottság, teljesítménypotenciál</strong>, amely megfelelő környezeti támogatással valamely területen <strong>átlag feletti teljesítményben</strong> bontakozhat ki.","coreText":"A tehetség olyan kiemelkedő adottság, teljesítménypotenciál, amely megfelelő környezeti támogatással valamely területen átlag feletti teljesítményben bontakozhat ki.","rest":["<strong>Renzulli háromkörös modellje</strong> szerint három összetevő metszete: az <strong>átlag feletti</strong> (általános vagy speciális) <strong>képességek</strong>, a <strong>kreativitás</strong> és a <strong>feladat iránti elkötelezettség</strong> (motiváció).","<strong>Mönks</strong> ezt kiegészíti a környezeti tényezőkkel (<strong>család, iskola, kortársak</strong>), <strong>Gagné</strong> pedig megkülönbözteti a veleszületett adottságot (giftedness) és a fejlesztés révén kibontakozó tehetséget (talent).","A Nkt. (4. § 14.) a <strong>kiemelten tehetséges</strong> tanulót a különleges bánásmódot igénylők közé sorolja, ezért a <strong>tehetséggondozás</strong> (gazdagítás, gyorsítás, mentorálás) az iskola feladata, és a pedagógiai programban is meg kell jelennie."],"source":"Balogh (2010); Nkt. 4. § 14. pont; ajánlott: Petriné Feyér (2022)"},{"id":"c11","n":11,"deck":"zh","term":"Inklúzió","en":"inclusion","core":"Az inklúzió (befogadás) olyan szemlélet és iskolai gyakorlat, amelyben <strong>az iskola alakul át</strong> úgy, hogy <strong>minden gyermeket</strong> – képességeitől, fogyatékosságától, származásától, társadalmi hátterétől függetlenül – befogadjon.","coreText":"Az inklúzió (befogadás) olyan szemlélet és iskolai gyakorlat, amelyben az iskola alakul át úgy, hogy minden gyermeket – képességeitől, fogyatékosságától, származásától, társadalmi hátterétől függetlenül – befogadjon.","rest":["Célja, hogy mindenki számára biztosítsa a <strong>jelenlétet, a részvételt és az eredményes tanulást</strong>, és lebontsa az ezeket korlátozó akadályokat (UNESCO, 2017).","Az integrációval szemben itt nem a gyermeknek kell alkalmazkodnia a meglévő iskolához, hanem az iskola igazítja <strong>tanulásszervezését, módszereit és értékelését</strong> a tanulók sokféleségéhez.","A <strong>különbözőséget értéknek és erőforrásnak</strong> tekinti; nemzetközi alapdokumentuma a <strong>Salamancai Nyilatkozat</strong> (UNESCO, 1994), és szorosan kapcsolódik az adaptivitáshoz és a méltányossághoz."],"source":"UNESCO (1994, 2017); Rapos és mtsai (2011); Nahalka (2016)"},{"id":"c12","n":12,"deck":"zh","term":"Integráció","en":"integration","core":"Az integráció (együttnevelés) azt jelenti, hogy a korábban <strong>elkülönítetten</strong> nevelt tanulók (pl. SNI vagy hátrányos helyzetű gyerekek) a többiekkel <strong>közös intézményben, osztályban</strong> tanulnak.","coreText":"Az integráció (együttnevelés) azt jelenti, hogy a korábban elkülönítetten nevelt tanulók (pl. SNI vagy hátrányos helyzetű gyerekek) a többiekkel közös intézményben, osztályban tanulnak.","rest":["Fokozatai: <strong>lokális</strong> (egy épületben, de külön csoportban), <strong>szociális</strong> (a tanórán kívüli tevékenységekben együtt) és <strong>funkcionális</strong> (részben vagy teljesen a tanórákon is együtt tanulnak) integráció.","Az integrációban elsősorban <strong>a gyermeknek kell alkalmazkodnia</strong> a meglévő iskolai keretekhez, az iskola legfeljebb kiegészítő segítséget (pl. gyógypedagógust, fejlesztést) nyújt.","A szegregáció ellentéte és az inklúzió felé vezető lépés, de a tanulók puszta „összekeverése” önmagában nem elég, ha a <strong>pedagógiai kultúra</strong> nem változik (Nahalka, 2016)."],"source":"Nahalka (2016); a gyógypedagógiai szakirodalom szokásos felosztása"},{"id":"c13","n":13,"deck":"zh","term":"Multikulturális nevelés","en":"multicultural education","core":"A multikulturális nevelés a nevelés azon területe, amelynek fő célja <strong>egyenlő nevelési-oktatási lehetőségek</strong> biztosítása a különböző etnikai és kulturális csoportokhoz, nemekhez és társadalmi osztályokhoz tartozó diákok számára (Banks, idézi Páva, 2015).","coreText":"A multikulturális nevelés a nevelés azon területe, amelynek fő célja egyenlő nevelési-oktatási lehetőségek biztosítása a különböző etnikai és kulturális csoportokhoz, nemekhez és társadalmi osztályokhoz tartozó diákok számára (Banks, idézi Páva, 2015).","rest":["Célja továbbá, hogy minden tanuló megismerje és <strong>értékként fogadja el a kulturális sokféleséget</strong>, erősödjön saját <strong>identitása</strong>, és csökkenjenek az <strong>előítéletek</strong>.","A multikulturalizmus inkább a társadalom sokszínűségére, az <strong>interkulturális</strong> nevelés a kultúrák közötti <strong>párbeszédre</strong> és kölcsönös tanulásra helyezi a hangsúlyt (az USA-ban az előbbi, Európában inkább az utóbbi kifejezés terjedt el).","Nem egy külön tantárgy, hanem az egész iskolai működést – tananyagot, módszereket, iskolai légkört, szülőkkel való kapcsolatot – átható <strong>szemlélet</strong>."],"source":"Páva (2015)"},{"id":"c14","n":14,"deck":"zh","term":"Komprehenzív iskola","en":"comprehensive school","core":"A komprehenzív iskola <strong>nem felvételiztet, nem válogat</strong> a tanulók között, hanem minden gyermeket – képességtől és társadalmi háttértől függetlenül – együtt, <strong>heterogén tanulócsoportokban</strong> tanít (Mészáros, 2015b).","coreText":"A komprehenzív iskola nem felvételiztet, nem válogat a tanulók között, hanem minden gyermeket – képességtől és társadalmi háttértől függetlenül – együtt, heterogén tanulócsoportokban tanít (Mészáros, 2015b).","rest":["Komprehenzív rendszerben az iskolák közötti különbségek kicsik, a különbségek inkább <strong>az iskolán belül</strong> jelennek meg, ezért meghatározó az <strong>egyéni, személyre szabott pedagógiai kultúra</strong>.","Mivel késlelteti vagy kizárja a <strong>korai szelekciót</strong>, csökkentheti a társadalmi különbségeket és <strong>növeli az esélyegyenlőséget</strong> (Csapó, 2003).","Tipikus példái az északi (pl. finn) egységes alapiskolák."],"source":"előadás diái; Mészáros (2015b); Csapó (2003)"},{"id":"c15","n":15,"deck":"zh","term":"Szelektív iskola","en":"selective school / system","core":"A szelektív iskola (rendszer) a tanulókat <strong>képesség, teljesítmény</strong> – és rejtetten gyakran <strong>társadalmi háttér</strong> – szerint válogatja, és viszonylag <strong>homogén tanulócsoportokat</strong>, iskolákat alakít ki (pl. felvételi, korai elágazás a 6 és 8 évfolyamos gimnáziumokkal, tagozatos osztályok).","coreText":"A szelektív iskola (rendszer) a tanulókat képesség, teljesítmény – és rejtetten gyakran társadalmi háttér – szerint válogatja, és viszonylag homogén tanulócsoportokat, iskolákat alakít ki (pl. felvételi, korai elágazás a 6 és 8 évfolyamos gimnáziumokkal, tagozatos osztályok).","rest":["Következménye, hogy <strong>az egyes iskolák között nagyok a különbségek</strong>, és a tanuló iskolai útját erősen meghatározza a családi háttere.","A szelektív rendszer a társadalmi különbségeket inkább <strong>konzerválja, újratermeli</strong>, és <strong>növeli az esélyegyenlőtlenségeket</strong>.","A magyar iskolarendszer nemzetközi összehasonlításban erősen szelektív: a mérések (OKM, PISA) szerint a tanulói eredményeket kiemelkedően erősen befolyásolja a családi háttér."],"source":"előadás diái (OKM 2021, 2022); Nahalka (2016); Csapó (2003)"},{"id":"c16","n":16,"deck":"zh","term":"Lemorzsolódás","en":"dropout","core":"A lemorzsolódás azt jelenti, hogy a tanuló <strong>végzettség megszerzése nélkül</strong> (Magyarországon jellemzően középfokú végzettség nélkül) <strong>kikerül az iskolarendszerből</strong>.","coreText":"A lemorzsolódás azt jelenti, hogy a tanuló végzettség megszerzése nélkül (Magyarországon jellemzően középfokú végzettség nélkül) kikerül az iskolarendszerből.","rest":["Fehérvári (2015) Rumberger nyomán hangsúlyozza, hogy a fogalom jelenthet <strong>státuszt</strong>, <strong>eseményt</strong> és <strong>folyamatot</strong> is: hosszú, sok tényező által befolyásolt folyamatról van szó, amely gyakran már az általános iskolában (kudarcok, évismétlés, hiányzás) elkezdődik.","Rokon, de nem azonos fogalom a <strong>korai iskolaelhagyás</strong> (EU-mutató): a 18–24 évesek közül a legfeljebb alsó középfokú végzettségűek aránya, akik nem vesznek részt oktatásban, képzésben.","Fő kockázati tényezői az alacsony <strong>szocioökonómiai státusz</strong>, a szülők alacsony iskolázottsága, a hátrányos helyzet és a korábbi <strong>iskolai kudarcok</strong>; Magyarországon jellemzően a szakiskolai képzésben következik be."],"source":"Fehérvári (2015)"},{"id":"c17","n":17,"deck":"zh","term":"Szegregáció","en":"segregation","core":"A szegregáció a tanulók <strong>elkülönítése</strong>, amely <strong>diszkriminációval</strong> párosul: Nahalka (2016) szerint, ha a szelekcióval együtt diszkrimináció történik, az szegregáció – különösen, ha a kiválogatott csoport <strong>szociokulturálisan homogén</strong> (pl. hátrányos helyzetű tanulók).","coreText":"A szegregáció a tanulók elkülönítése, amely diszkriminációval párosul: Nahalka (2016) szerint, ha a szelekcióval együtt diszkrimináció történik, az szegregáció – különösen, ha a kiválogatott csoport szociokulturálisan homogén (pl. hátrányos helyzetű tanulók).","rest":["Megvalósulhat <strong>iskolák között</strong> (szegregált iskolák, pl. lakóhelyi szegregáció, szabad iskolaválasztás, a jobb helyzetű családok elvándorlása révén) és <strong>iskolán belül</strong> (külön osztályok, csoportok).","Jogilag az egyenlő bánásmódról szóló törvény (Ebktv.) szerint a <strong>jogellenes elkülönítés</strong> a hátrányos megkülönböztetés egyik formája, amely az oktatásban is tilos.","Nahalka <strong>szegregációelmélete</strong> szerint a hátrányos helyzetű tanulók fejlesztése csak akkor lehet sikeres, ha ezt a szegregáció nem gátolja, ezért minél <strong>heterogénebb osztályok</strong> kialakítására van szükség."],"source":"Nahalka (2016, 2022); előadás diái; Ebktv. 10. § (2), 27. § (3); Kertesi–Kézdi (2009)"},{"id":"c18","n":18,"deck":"zh","term":"Szociokulturális háttér","en":"sociocultural background","core":"A szociokulturális háttér a tanuló családjának és közvetlen környezetének <strong>kulturális jellemzőit</strong> jelenti: értékeit, normáit, <strong>nyelvhasználatát</strong>, a szülők iskolázottságát, kulturális szokásait és a tanuláshoz, iskolához való viszonyát.","coreText":"A szociokulturális háttér a tanuló családjának és közvetlen környezetének kulturális jellemzőit jelenti: értékeit, normáit, nyelvhasználatát, a szülők iskolázottságát, kulturális szokásait és a tanuláshoz, iskolához való viszonyát.","rest":["A szociokulturális hátrány lehet <strong>nyelvi, tanulási és kulturális</strong> hátrány.","<strong>Bourdieu</strong> szerint a családból hozott <strong>kulturális tőke</strong> az iskolában előnnyé válik, mert az iskola a domináns kultúrát preferálja; <strong>Bernstein</strong> szerint az iskola a <strong>kidolgozott nyelvi kódot</strong> várja el, ami a korlátozott kódot használó gyerekeket hátrányba hozza.","Nahalka <strong>adaptív szemlélete</strong> szerint a hátrányos helyzetű tanulók elmaradásának egyik oka éppen az, hogy az iskola egyoldalúan a magasabb presztízsű csoportok kultúráját, nyelvét, érték- és normarendszerét preferálja (<strong>látens diszkrimináció</strong>)."],"source":"előadás diái; Nahalka (2022)"},{"id":"c19","n":19,"deck":"zh","term":"Szocioökonómiai státusz","en":"socioeconomic status, SES","core":"A szocioökonómiai státusz (SES) a család <strong>társadalmi-gazdasági helyzete</strong>, amelyet jellemzően a szülők <strong>iskolai végzettségével, foglalkozásával</strong> és a család <strong>jövedelmével</strong>, anyagi javaival mérnek.","coreText":"A szocioökonómiai státusz (SES) a család társadalmi-gazdasági helyzete, amelyet jellemzően a szülők iskolai végzettségével, foglalkozásával és a család jövedelmével, anyagi javaival mérnek.","rest":["A szocioökonómiai hátrány <strong>objektív</strong> (tényleges anyagi nélkülözés) és <strong>szubjektív</strong> (megélt, másokhoz viszonyított) <strong>szegénységként</strong> is megjelenhet.","Nemzetközi mérésekben a PISA <strong>ESCS-indexe</strong>, a hazai kompetenciamérésben a <strong>családi háttér index (CSH-index)</strong> jelzi (pl. a szülők végzettsége, az otthoni könyvek száma, a HHH-státusz alapján).","A mérések szerint Magyarországon a tanulói teljesítmény és a SES között <strong>kiemelkedően erős az összefüggés</strong>, ami az iskolarendszer szelektivitását tükrözi.","A szociokulturális háttérrel szemben inkább a gazdasági-társadalmi <strong>pozíciót</strong> ragadja meg, nem a kulturális jellemzőket."],"source":"előadás diái (OKM 2021, 2022); OECD PISA; Fehérvári (2015)"},{"id":"c20","n":20,"deck":"zh","term":"Pedagógiai program","en":"pedagogical programme","core":"A pedagógiai program az iskola <strong>nevelő-oktató munkájának átfogó alapdokumentuma</strong>: rögzíti, milyen <strong>értékek, elvek és célok</strong> mentén, milyen módon neveli és oktatja az intézmény a tanulókat.","coreText":"A pedagógiai program az iskola nevelő-oktató munkájának átfogó alapdokumentuma: rögzíti, milyen értékek, elvek és célok mentén, milyen módon neveli és oktatja az intézmény a tanulókat.","rest":["Két fő része a <strong>nevelési program</strong> (pedagógiai filozófia, értékek, személyiség- és közösségfejlesztés, tehetséggondozás, a szociális hátrányok és a beilleszkedési, tanulási, magatartási nehézségek enyhítése) és a <strong>helyi tanterv</strong> (tantárgyak, óraszámok, tananyag, az ellenőrzés és értékelés módja).","<strong>Minden iskolának van</strong> pedagógiai programja: a <strong>nevelőtestület fogadja el</strong>, az <strong>igazgató hagyja jóvá</strong>, a fenntartó pedig csak azokhoz a részekhez ad egyetértést, amelyekből neki többletkötelezettség származik (Nkt. 26. §).","<strong>Nyilvános</strong>, az iskola honlapján is elérhető; az iskola további belső szabályozó dokumentumai az <strong>SZMSZ</strong> és a <strong>házirend</strong>."],"source":"előadás diái; Nkt. 26. § (a 2026. augusztus 20-tól hatályos szöveg); 20/2012. (VIII. 31.) EMMI rendelet 7. §"}];
+
+const DECKS = [
+  { id: "all", label: "Mind" },
+  { id: "zh", label: "ZH-fogalmak" },
+  { id: "kieg", label: "Kiegészítés" },
+];
+const DECK_TAG = { zh: "ZH-fogalom", kieg: "Kiegészítés" };
+
+const state = {
+  deck: "all",
+  shuffle: false,
+  onlyPractice: false,
+  order: [],
+  pos: 0,
+  flipped: false,
+  known: new Set(),
+  practice: new Set(),
+};
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  decks: $("decks"), count: $("count"), tKnown: $("tKnown"), tPractice: $("tPractice"),
+  shuffle: $("shuffle"), bar: $("bar"), study: $("study"), card: $("card"), front: $("front"),
+  back: $("back"), rate: $("rate"), prev: $("btnPrev"), next: $("btnNext"), flip: $("btnFlip"),
+  known: $("btnKnown"), practice: $("btnPractice"), done: $("done"), doneText: $("doneText"),
+  doneStats: $("doneStats"), doneActions: $("doneActions"), live: $("live"),
+};
+
+function deckCards(deck) {
+  return CARDS.filter((c) => deck === "all" || c.deck === deck);
+}
+
+function shuffled(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function build() {
+  let ids = deckCards(state.deck).map((c) => c.id);
+  if (state.onlyPractice) ids = ids.filter((id) => state.practice.has(id));
+  state.order = state.shuffle ? shuffled(ids) : ids;
+  state.pos = 0;
+  state.flipped = false;
+  showStudy();
+}
+
+function renderDecks() {
+  els.decks.innerHTML = "";
+  const present = new Set(CARDS.map((c) => c.deck));
+  if (present.size < 2) { els.decks.hidden = true; return; }
+  DECKS.forEach((d) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", String(state.deck === d.id));
+    b.textContent = `${d.label} (${deckCards(d.id).length})`;
+    b.addEventListener("click", () => {
+      state.deck = d.id;
+      state.onlyPractice = false;
+      renderDecks();
+      build();
+    });
+    els.decks.appendChild(b);
+  });
+}
+
+function current() {
+  return CARDS.find((c) => c.id === state.order[state.pos]);
+}
+
+function render() {
+  const total = state.order.length;
+  const ids = new Set(deckCards(state.deck).map((c) => c.id));
+  const k = [...state.known].filter((id) => ids.has(id)).length;
+  const p = [...state.practice].filter((id) => ids.has(id)).length;
+  els.tKnown.textContent = `Tudom: ${k}`;
+  els.tPractice.textContent = `Még gyakorlom: ${p}`;
+
+  if (!els.done.hidden) {
+    els.count.textContent = `${total} / ${total}`;
+    els.bar.style.width = "100%";
+    return;
+  }
+  const c = current();
+  if (!c) return;
+  els.count.textContent = `${state.pos + 1} / ${total}${state.onlyPractice ? " · gyakorlandók" : ""}`;
+  els.bar.style.width = `${(state.pos / total) * 100}%`;
+
+  els.front.innerHTML =
+    `<span class="tag">${DECK_TAG[c.deck]}</span>` +
+    `<span class="num">${c.n}.</span>` +
+    `<div class="term">${c.term}</div>` +
+    (c.en ? `<div class="en">${c.en}</div>` : "") +
+    `<div class="hint">Gondolja végig a meghatározást, majd fordítsa meg a kártyát.</div>`;
+
+  const restItems = c.rest.map((s) => `<li>${s}</li>`).join("");
+  els.back.innerHTML =
+    `<div class="head"><span class="bterm">${c.term}</span>${c.en ? `<span class="ben">${c.en}</span>` : ""}</div>` +
+    `<p class="core">${c.core}</p>` +
+    (c.rest.length
+      ? `<button class="more" type="button" aria-expanded="false" aria-controls="rest-${c.id}">Bővebben <span class="chev" aria-hidden="true">▾</span></button>` +
+        `<ul class="rest" id="rest-${c.id}" hidden>${restItems}</ul>`
+      : "") +
+    `<div class="src">Forrás: ${c.source}</div>`;
+
+  const more = els.back.querySelector(".more");
+  if (more) {
+    more.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const list = els.back.querySelector(".rest");
+      const open = more.getAttribute("aria-expanded") === "true";
+      more.setAttribute("aria-expanded", String(!open));
+      more.firstChild.textContent = open ? "Bővebben " : "Kevesebb ";
+      list.hidden = open;
+    });
+  }
+
+  els.card.classList.toggle("flipped", state.flipped);
+  els.front.setAttribute("aria-hidden", String(state.flipped));
+  els.back.setAttribute("aria-hidden", String(!state.flipped));
+  if (more) more.tabIndex = state.flipped ? 0 : -1;
+  els.rate.hidden = !state.flipped;
+  els.flip.textContent = state.flipped ? "Vissza az előlapra" : "Megfordítás";
+  els.prev.disabled = state.pos === 0;
+  els.next.textContent = state.pos === total - 1 ? "Befejezés →" : "Következő →";
+}
+
+function announce(msg) {
+  els.live.textContent = "";
+  setTimeout(() => (els.live.textContent = msg), 30);
+}
+
+function flip() {
+  if (!els.done.hidden) return;
+  state.flipped = !state.flipped;
+  render();
+  const c = current();
+  announce(state.flipped ? `${c.term}: ${c.coreText}` : c.term);
+}
+
+function go(delta) {
+  if (!els.done.hidden) return;
+  const np = state.pos + delta;
+  if (np < 0) return;
+  if (np >= state.order.length) return finish();
+  state.pos = np;
+  state.flipped = false;
+  render();
+  if (els.card.getBoundingClientRect().top < 0) els.card.scrollIntoView({ block: "start" });
+  announce(current().term);
+}
+
+function rate(known) {
+  if (!state.flipped || !els.done.hidden) return;
+  const id = current().id;
+  if (known) { state.known.add(id); state.practice.delete(id); }
+  else { state.practice.add(id); state.known.delete(id); }
+  go(1);
+}
+
+function showStudy() {
+  els.done.hidden = true;
+  els.study.hidden = false;
+  if (!state.order.length) {
+    state.onlyPractice = false;
+    return build();
+  }
+  render();
+}
+
+function finish() {
+  els.study.hidden = true;
+  els.done.hidden = false;
+  const ids = new Set(state.order);
+  const k = [...state.known].filter((id) => ids.has(id)).length;
+  const p = [...state.practice].filter((id) => ids.has(id)).length;
+  const u = state.order.length - k - p;
+  els.doneText.textContent = `${state.order.length} kártyát nézett át ebben a körben.`;
+  els.doneStats.innerHTML =
+    `<span class="pill good">Tudom: ${k}</span><span class="pill warn">Még gyakorlom: ${p}</span>` +
+    (u ? `<span class="pill" style="background:var(--accent-weak);color:var(--accent)">Nem jelölt: ${u}</span>` : "");
+  els.doneActions.innerHTML = "";
+  const practiceIds = deckCards(state.deck).filter((c) => state.practice.has(c.id));
+  if (practiceIds.length) {
+    els.doneActions.appendChild(button(`Gyakorlandók újra (${practiceIds.length})`, "btn primary", () => {
+      state.onlyPractice = true; build();
+    }));
+  }
+  els.doneActions.appendChild(button("Az egész pakli újra", "btn", () => {
+    state.onlyPractice = false; build();
+  }));
+  els.doneActions.appendChild(button("Jelölések törlése", "btn", () => {
+    state.known.clear(); state.practice.clear(); state.onlyPractice = false; build();
+  }));
+  render();
+  els.doneActions.firstChild.focus();
+}
+
+function button(label, cls, fn) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = cls; b.textContent = label;
+  b.addEventListener("click", fn);
+  return b;
+}
+
+els.card.addEventListener("click", flip);
+els.flip.addEventListener("click", flip);
+els.prev.addEventListener("click", () => go(-1));
+els.next.addEventListener("click", () => go(1));
+els.known.addEventListener("click", () => rate(true));
+els.practice.addEventListener("click", () => rate(false));
+els.shuffle.addEventListener("change", () => { state.shuffle = els.shuffle.checked; build(); });
+
+document.addEventListener("keydown", (e) => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "input") return;
+  if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); flip(); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+  else if (e.key === "1") rate(false);
+  else if (e.key === "2") rate(true);
+});
+
+renderDecks();
+build();
+</script>
+</body>
+</html>
