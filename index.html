@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Egyetemi tanulóanyagok</title>
+<style>
+:root {
+  --bg: #F3F6F6;
+  --card: #FFFFFF;
+  --ink: #1D2A2C;
+  --muted: #5F6B6D;
+  --accent: #1B6B73;
+  --accent-weak: #E2EEEF;
+  --border: #D3DDDE;
+  --shadow: 0 1px 2px rgba(20, 40, 42, .06), 0 8px 24px rgba(20, 40, 42, .08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111819;
+    --card: #1A2526;
+    --ink: #E5EDEE;
+    --muted: #9AAAAC;
+    --accent: #63B5BE;
+    --accent-weak: #1F3537;
+    --border: #2C3C3E;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding: 40px 16px 48px; }
+header h1 { font-size: 1.75rem; line-height: 1.2; margin: 0 0 6px; color: var(--accent); letter-spacing: -.01em; }
+header p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+h2 { font-size: .8rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 32px 0 10px; font-weight: 600; }
+
+.items { display: grid; gap: 12px; }
+a.item {
+  display: block; text-decoration: none; color: inherit;
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: var(--shadow); padding: 20px 22px;
+  transition: border-color .15s, transform .15s;
+}
+a.item:hover { border-color: var(--accent); transform: translateY(-1px); }
+a.item:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.item .kind { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.item .title { font-size: 1.12rem; font-weight: 700; margin: 4px 0 4px; }
+.item .meta { color: var(--muted); font-size: .9rem; }
+
+footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
+footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Egyetemi tanulóanyagok</h1>
+    <p>Saját készítésű jegyzetek és tanulókártyák · 2026/27. őszi félév</p>
+  </header>
+
+  <h2>Iskolák és tanuló közösségek</h2>
+  <div class="items">
+    <a class="item" href="iskolak-tanulokozossegek/">
+      <div class="kind">Fogalomkártyák</div>
+      <div class="title">Fogalomkártyák – Iskolák és tanuló közösségek</div>
+      <div class="meta">20 ZH-fogalom · megfordítható kártyák, keverés, „tudom / még gyakorlom” jelölés</div>
+    </a>
+  </div>
+
+  <footer>
+    Az oldal forrása a <a href="https://github.com/DinGroguPatu/university">GitHub-tárolóban</a> található.
+  </footer>
+</div>
+</body>
+</html>
