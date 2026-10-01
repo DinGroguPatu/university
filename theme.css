@@ -1,0 +1,41 @@
+/* ---------------------------------------------------------------
+   Közös színpaletta – minden oldal innen veszi a színeit.
+   Átszínezéshez CSAK ezt a fájlt kell módosítani.
+   Paletta: sötétkék (navy), zöld, világosbarna, fehér alapon.
+   --------------------------------------------------------------- */
+:root {
+  /* alapszínek */
+  --navy: #152740;
+  --green: #2E7D52;
+  --tan: #B08A5E;
+  --cream: #FAF5EC;
+  --cream-line: #E3D3BC;
+
+  /* felületek és szöveg */
+  --bg: #FFFFFF;
+  --card: #FFFFFF;
+  --ink: #1C2533;
+  --muted: #5B6678;
+  --border: #D5DCE6;
+  --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 8px 24px rgba(20, 30, 50, .10);
+
+  /* kiemelés és állapotok */
+  --accent: var(--navy);
+  --accent-ink: #FFFFFF;
+  --accent-weak: #E6ECF4;
+  --good: var(--green);
+  --good-weak: #E2F1E8;
+  --warn: #7A5530;
+  --warn-weak: #F2E6D4;
+
+  /* kártyalap-specifikus színek */
+  --on-navy: #FFFFFF;
+  --on-navy-muted: rgba(255, 255, 255, .75);
+  --key: #000000;
+  --btn-warn-bg: #E9D6BB;
+  --btn-warn-ink: #5E4024;
+  --btn-good-bg: #D7ECDF;
+  --btn-good-ink: #22603F;
+
+  color-scheme: light;
+}
