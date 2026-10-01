@@ -3,40 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>Fogalomkártyák – Iskolák és tanuló közösségek</title>
+<link rel="stylesheet" href="../theme.css">
 <style>
-:root {
-  --bg: #F3F6F6;
-  --card: #FFFFFF;
-  --ink: #1D2A2C;
-  --muted: #5F6B6D;
-  --accent: #1B6B73;
-  --accent-ink: #FFFFFF;
-  --accent-weak: #E2EEEF;
-  --border: #D3DDDE;
-  --good: #2E7D4F;
-  --good-weak: #E3F2E8;
-  --warn: #A85A12;
-  --warn-weak: #FBEEDD;
-  --shadow: 0 1px 2px rgba(20, 40, 42, .06), 0 8px 24px rgba(20, 40, 42, .08);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #111819;
-    --card: #1A2526;
-    --ink: #E5EDEE;
-    --muted: #9AAAAC;
-    --accent: #63B5BE;
-    --accent-ink: #0E1A1B;
-    --accent-weak: #1F3537;
-    --border: #2C3C3E;
-    --good: #72C796;
-    --good-weak: #1C3226;
-    --warn: #E8A564;
-    --warn-weak: #382819;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
-  }
-}
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body {
@@ -152,6 +122,19 @@ kbd { font-family: inherit; font-size: .78rem; border: 1px solid var(--border); 
   .card.flipped .front { opacity: 0; visibility: hidden; }
   .card.flipped .back { opacity: 1; visibility: visible; }
 }
+/* Kártyalapok színezése – a konkrét színértékek a theme.css-ben */
+.bar span { background: var(--green); }
+.toggle input { accent-color: var(--navy); }
+.front { background: var(--navy); border-color: var(--navy); }
+.front .term { color: var(--on-navy); }
+.front .en, .front .tag, .front .num, .front .hint { color: var(--on-navy-muted); }
+.back { background: var(--cream); border-color: var(--cream-line); }
+.back .head { border-bottom-color: var(--cream-line); }
+.back .bterm { color: var(--navy); }
+.core strong, .rest strong { color: var(--key); }
+.rest li::before { background: var(--tan); opacity: .9; }
+.btn.warn { background: var(--btn-warn-bg); color: var(--btn-warn-ink); }
+.btn.good { background: var(--btn-good-bg); color: var(--btn-good-ink); }
 </style>
 </head>
 <body>
